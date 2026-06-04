@@ -12,6 +12,9 @@ export interface AuthResponse {
   user: User;
 }
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 export const authService = {
   async register(name: string, username: string, email: string, password: string) {
     const response = await api.post<{ data: AuthResponse }>('/auth/register', {
@@ -32,15 +35,22 @@ export const authService = {
   },
 
   logout() {
-    localStorage.removeItem('token');
+    if (isBrowser) {
+      localStorage.removeItem('token');
+    }
   },
 
   setToken(token: string) {
-    localStorage.setItem('token', token);
+    if (isBrowser) {
+      localStorage.setItem('token', token);
+    }
   },
 
   getToken() {
-    return localStorage.getItem('token');
+    if (isBrowser) {
+      return localStorage.getItem('token');
+    }
+    return null;
   },
 
   isAuthenticated() {

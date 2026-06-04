@@ -43,6 +43,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Check if we're in browser - DECLARE FIRST!
+  const isBrowser = typeof window !== 'undefined';
+  
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [libraryTrigger, setLibraryTrigger] = useState(0);
@@ -68,16 +71,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const data: AuthResponse = await authService.register(name, username, email, password);
     authService.setToken(data.token);
     // Clear old data only for new accounts
-    localStorage.removeItem('myLibrary');
-    localStorage.removeItem('myClubs');
+    if (isBrowser) {
+      localStorage.removeItem('myLibrary');
+      localStorage.removeItem('myClubs');
+    }
     setUser(data.user);
   };
 
   const logout = () => {
     authService.logout();
     // Clear all local data
-    localStorage.removeItem('myLibrary');
-    localStorage.removeItem('myClubs');
+    if (isBrowser) {
+      localStorage.removeItem('myLibrary');
+      localStorage.removeItem('myClubs');
+    }
     setUser(null);
   };
 
@@ -90,43 +97,53 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const addToLibrary = (reading: Reading) => {
-    const existing = getLibrary();
-    const updated = [...existing, reading];
-    localStorage.setItem('myLibrary', JSON.stringify(updated));
-    refreshLibrary();
+    if (isBrowser) {
+      const existing = getLibrary();
+      const updated = [...existing, reading];
+      localStorage.setItem('myLibrary', JSON.stringify(updated));
+      refreshLibrary();
+    }
   };
 
   const updateReadingStatus = (id: string, newStatus: string) => {
-    const library = getLibrary();
-    const updated = library.map(reading => {
-      if (reading.id === id) {
-        return { ...reading, status: newStatus };
-      }
-      return reading;
-    });
-    localStorage.setItem('myLibrary', JSON.stringify(updated));
-    refreshLibrary();
+    if (isBrowser) {
+      const library = getLibrary();
+      const updated = library.map(reading => {
+        if (reading.id === id) {
+          return { ...reading, status: newStatus };
+        }
+        return reading;
+      });
+      localStorage.setItem('myLibrary', JSON.stringify(updated));
+      refreshLibrary();
+    }
   };
 
   const getLibrary = (): Reading[] => {
-    const data = localStorage.getItem('myLibrary');
-    if (data) {
-      return JSON.parse(data);
+    if (isBrowser) {
+      const data = localStorage.getItem('myLibrary');
+      if (data) {
+        return JSON.parse(data);
+      }
     }
     return []; // Empty library by default
   };
 
   const addToClubs = (club: Club) => {
-    const existing = getClubs();
-    const updated = [...existing, club];
-    localStorage.setItem('myClubs', JSON.stringify(updated));
-    refreshClubs();
+    if (isBrowser) {
+      const existing = getClubs();
+      const updated = [...existing, club];
+      localStorage.setItem('myClubs', JSON.stringify(updated));
+      refreshClubs();
+    }
   };
 
   const getClubs = (): Club[] => {
-    const data = localStorage.getItem('myClubs');
-    if (data) {
-      return JSON.parse(data);
+    if (isBrowser) {
+      const data = localStorage.getItem('myClubs');
+      if (data) {
+        return JSON.parse(data);
+      }
     }
     return []; // Empty clubs by default
   };
